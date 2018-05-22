@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>blog</title>
+</head>
+<body>
+  <div class="get">
+    <h2>Get all users</h2>
+    <div id="users">
+      <p>Name: -- &nbsp;&nbsp;age: --</p>
+    </div>
+   <input type="button" id="get-users" value="GET User">
+  </div>
+  <div class="post">
+    <h2>Add users</h2>
+    <lable>Name:</lable> <input type="text" id="add-name" placeholder="input name" > <br>
+    <lable>Age:</lable> <input type="text" id="add-age" placeholder="input age" > <br>
+    <input type="button" value="Add user" id="add-user">
+  </div>
+  <div class="update">
+    <h2>Modify users</h2>
+    <lable>Name:</lable> <input type="text" id="mod-name" placeholder="input name" > <br>
+    <lable>Age:</lable> <input type="text" id="mod-age" placeholder="input age" > <br>
+    <input type="button" value="Mod user" id="mod-user">
+  </div>
+  <div class="delete">
+    <h2>Delete users</h2>
+    <lable>Name:</lable> <input type="text" id="del-name" placeholder="input name" > <br>
+    <input type="button" value="Del user" id="del-user">
+  </div>
+</body>
+<script>
+  (function() {
+    var fetchOprate = (url, method, data) => {
+      fetch(url, {
+        method: method, //请求方法 post， patch， delete
+        credentials: 'include',
+        headers: {  //带上这个请求头，否则request body无法解析
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      }).then(res => {
+        res.json().then(resp => { //返回JOSN字符串解析
+          console.log('resp', resp) //console输出字符串
+        })
+      }).catch(err => {
+        console.log('err', err)
+      })
+    }
+    //get 请求
+    document.getElementById('get-users').addEventListener('click', function() {
+      fetch('/api/user', {
+        method: 'GET',
+        credentials: 'include',
+      }).then(res => {
+        res.json().then(resp => {
+          var elem = ''
+          for(var i=0; i<resp.data.length; i++) { //将渲染结果
+            var item = resp.data[i]
+            elem += '<p>Name: ' + item.name + '&nbsp;&nbsp;age: ' + item.age + '</p>'
+          }
+          console.log('elem', elem)
+          document.getElementById('users').innerHTML = elem
+        })
+      }).catch(err => {
+        console.log('err', err)
+      })
+    })
+    //post 请求
+    document.getElementById('add-user').addEventListener('click', function() {
+      var user = {}
+      user.name = document.getElementById('add-name').value
+      user.age = document.getElementById('add-age').value
+      fetchOprate('/api/user', 'POST', user) //发生请求
+    })
+    //patch 请求
+    document.getElementById('mod-user').addEventListener('click', function() {
+      var name = document.getElementById('mod-name').value
+      var age = document.getElementById('mod-age').value
+      fetchOprate('/api/user/'+name, 'PATCH', {age: age}) //发送请求
+      //在router.js文件中，该接口的请求路径为 '/api/user/:name'， 需带上参数 name
+    })
+    //delete 请求
+    document.getElementById('del-user').addEventListener('click', function() {
+      var name = document.getElementById('del-name').value
+      fetchOprate('/api/user/'+name, 'DELETE', {})
+    })
+  })()
+</script>
+</html>
